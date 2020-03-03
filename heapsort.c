@@ -9,6 +9,11 @@
 mpz_t array_of_numbers[nums_in_list];
 
 void create_random_array();
+void heapSort(mpz_t arr[], int n);
+void heapify(mpz_t arr[], int n, int i);
+void create_random_array();
+
+
 
 int compare_numbers(mpz_t a ,mpz_t b);
 int compare_numbers(mpz_t a ,mpz_t b)
@@ -23,39 +28,10 @@ mpz_swap(a,b);
 return;
 }
 
-void test_call_back(int (*)(mpz_t,mpz_t), void (*)(mpz_t,mpz_t));
 typedef int (*callback_compare)(mpz_t,mpz_t);
 typedef void (*callback_swap)(mpz_t,mpz_t);
-
-
-int main ()
-{
-
 callback_compare call;
 callback_swap call1;
-create_random_array();
-call = compare_numbers;
-call1= swap_numbers;
-test_call_back(call,call1);
-
-}
-
-void test_call_back(callback_compare call, callback_swap call1)
-{
-  mpz_t a,b;
-  mpz_init(a);
-  mpz_init(b);
-  mpz_set(a,array_of_numbers[0]);
-  mpz_set(b,array_of_numbers[1]);
-  int i = call(array_of_numbers[0],array_of_numbers[1]);
-  printf("The value of i is %d\n",i);
-  gmp_printf("The value at 0 = %Zd\n",array_of_numbers[0]);
-  gmp_printf("The value at 1 = %Zd\n",array_of_numbers[1]);
-  call1(array_of_numbers[0],array_of_numbers[1]);
-  gmp_printf("The value at 0 = %Zd\n",array_of_numbers[0]);
-  gmp_printf("The value at 1 = %Zd\n",array_of_numbers[1]);
-  return;
-}
 
 
 void create_random_array()
@@ -75,7 +51,7 @@ void create_random_array()
   mpz_init(randNum);
   time_t current_time = time(NULL);
   /* Initialize Bounds */
-  rndBit = 128;
+  rndBit = 3;
   // mpz_init_set_str(rndBnd, "1000", 10);
 
   /* Initialize the random state with default algorithm... */
@@ -89,7 +65,6 @@ void create_random_array()
     mpz_set(array_of_numbers[i],randNum);
     gmp_printf("The value at %d = %Zd\n",i,array_of_numbers[i]);
   } /* end for */
-
   /* Clean up resources occupied by compensated */
   gmp_randclear(gmpRandState);
 
@@ -100,6 +75,58 @@ void create_random_array()
 
 }
 
+void heapSort(mpz_t arr[], int n)
+{
+    // Build heap (rearrange array)
+    for (int i = n / 2 - 1; i >= 0; i--)
+        heapify(arr, n, i);
 
-quick_sort(mpz_t * arr, s)
-      
+    // One by one extract an element from heap
+    for (int i=n-1; i>=0; i--)
+    {
+        // Move current root to end
+        call1(arr[0], arr[i]);
+
+        // call max heapify on the reduced heap
+        heapify(arr, i, 0);
+    }
+}
+
+// To heapify a subtree rooted with node i which is
+// an index in arr[]. n is size of heap
+void heapify(mpz_t arr[], int n, int i)
+{
+    int largest = i; // Initialize largest as root
+    int l = 2*i + 1; // left = 2*i + 1
+    int r = 2*i + 2; // right = 2*i + 2
+
+    // If left child is larger than root
+    if (l < n && (call(arr[l],arr[largest])==1))
+        largest = l;
+
+    // If right child is larger than largest so far
+    if (r < n && (call(arr[r],arr[largest])==1))
+        largest = r;
+
+    // If largest is not root
+    if (largest != i)
+    {
+        call1(arr[i], arr[largest]);
+
+        // Recursively heapify the affected sub-tree
+        heapify(arr, n, largest);
+    }
+}
+
+void main()
+{
+  call = &compare_numbers;
+  call1 = &swap_numbers;
+  create_random_array();
+  heapSort(array_of_numbers,nums_in_list);
+  gmp_printf("The value at 0 = %Zd\n",array_of_numbers[0]);
+  gmp_printf("The value at 1 = %Zd\n",array_of_numbers[1]);
+  gmp_printf("The value at 2 = %Zd\n",array_of_numbers[2]);
+  gmp_printf("The value at 3 = %Zd\n",array_of_numbers[3]);
+
+}
