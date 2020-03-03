@@ -8,7 +8,7 @@ typedef struct pair
 {
   mpz_t min;
   mpz_t max;
-}min_max_struct;
+}Min_Max_Struct;
 
 void getMinMax(mpz_t arr[], int n);
 int count_numbers_in_list(char *filename);
@@ -23,24 +23,28 @@ void main(int argc, char *argv[]){
     printf("Provide the filename with the list of numbers \n ");
     return ;
     }
+
+    //Count Number of elements in the list
     nums_in_list = count_numbers_in_list(argv[1]);
-    printf("Total Numbers in the list = %d\n",nums_in_list);
 
 
-    mpz_t array_of_numbers[nums_in_list];
-    for(int i =0;i<nums_in_list;i++)
+    if(nums_in_list>0)
     {
-      mpz_init(array_of_numbers[i]);
+        printf("Total Numbers in the list = %d\n",nums_in_list);
+        mpz_t array_of_numbers[nums_in_list];
+        for(int i =0;i<nums_in_list;i++)
+        {
+          mpz_init(array_of_numbers[i]);
+        }
+        for(int i =0;i<nums_in_list;i++)
+        {
+        mpz_inp_str(array_of_numbers[i],file_ptr,10);
+        gmp_printf("%Zd \n",array_of_numbers[i]);
+        }
+        getMinMax(array_of_numbers,nums_in_list);
     }
-    for(int i =0;i<nums_in_list;i++)
-    {
-    mpz_inp_str(array_of_numbers[i],file_ptr,10);
-    gmp_printf("%Zd \n",array_of_numbers[i]);
-    }
-
-    getMinMax(array_of_numbers,nums_in_list);
-
-
+    else
+    printf("The list of numbers is empty...\n");
     /* initialization of array_of_numbers */
     // array_of_numbers = (mpz_t *) malloc(nums_in_list * sizeof(mpz_t));
     // if (NULL == array_of_numbers) {
@@ -72,8 +76,6 @@ int count_numbers_in_list(char * filename)
 
     if (fp == NULL)
     return 0;
-
-    lines++;
     while ((ch = fgetc(fp)) != EOF)
       {
         if (ch == '\n')
@@ -88,7 +90,7 @@ int count_numbers_in_list(char * filename)
 void getMinMax(mpz_t arr[], int n)
 {
   int i;
-  min_max_struct list_min_max;
+  Min_Max_Struct list_min_max;
   mpz_init(list_min_max.min);
   mpz_init(list_min_max.max);
   /*If there is only one element then return it as min and max both*/
