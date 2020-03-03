@@ -5,7 +5,46 @@
 #include <time.h>
 
 #define nums_in_list 10000
-
+// int THREAD_MAX; //Number of threads that would be created
+//
+// // thread control parameters
+// struct tsk {
+//     int tsk_no;
+//     int tsk_low;
+//     int tsk_high;
+// };
+//
+//
+//
+// pthread_t threads[THREAD_MAX];
+// struct tsk tsklist[THREAD_MAX];
+// int len = MAX / THREAD_MAX;
+//
+// if (opt_t)
+//     printf("THREADS:%d MAX:%d LEN:%d\n", THREAD_MAX, MAX, len);
+//
+//
+//     // thread function for multi-threading
+// void * merge_sort_thread(void *arg)
+// {
+//   struct tsk *tsk = arg;
+//   int low;
+//   int high;
+//
+//   // calculating low and high
+//   low = tsk->tsk_low;
+//   high = tsk->tsk_high;
+//
+// // evaluating mid point
+//   int mid = low + (high - low) / 2;
+//
+//   if (low < high) {
+//     merge_sort(low, mid);
+//     merge_sort(mid + 1, high);
+//     merge(low, mid, high);
+//     }
+//
+//     return 0;
 mpz_t array_of_numbers[nums_in_list];
 
 void merge(mpz_t arr[], int l, int m, int r);

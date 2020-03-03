@@ -40,7 +40,7 @@ call1 = &swap_numbers;
 create_random_array();
 quick_sort(array_of_numbers,0,nums_in_list-1);
 for(int i=0; i<nums_in_list; i++)
-  gmp_printf("The value after sort at %d = %Zd\n",i,array_of_numbers[i]);
+gmp_printf("The value after sort at %d = %Zd\n",i,array_of_numbers[i]);
 
 }
 
