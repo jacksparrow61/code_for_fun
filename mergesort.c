@@ -4,15 +4,13 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define nums_in_list 4
+#define nums_in_list 10000
 
 mpz_t array_of_numbers[nums_in_list];
 
-void heapSort(mpz_t arr[], int n);
-void heapify(mpz_t arr[], int n, int i);
+void merge(mpz_t arr[], int l, int m, int r);
+void mergeSort(mpz_t arr[], int l, int r);
 void create_random_array();
-
-
 
 int compare_numbers(mpz_t a ,mpz_t b);
 int compare_numbers(mpz_t a ,mpz_t b)
@@ -50,7 +48,7 @@ void create_random_array()
   mpz_init(randNum);
   time_t current_time = time(NULL);
   /* Initialize Bounds */
-  rndBit = 3;
+  rndBit = 128;
   // mpz_init_set_str(rndBnd, "1000", 10);
 
   /* Initialize the random state with default algorithm... */
@@ -71,50 +69,91 @@ void create_random_array()
   mpz_clear(randNum);
 
   return;
-
 }
 
-void heapSort(mpz_t arr[], int n)
+/* l is for left index and r is right index of the
+   sub-array of arr to be sorted */
+void mergeSort(mpz_t arr[], int l, int r)
 {
-    // Build heap (rearrange array)
-    for (int i = n / 2 - 1; i >= 0; i--)
-        heapify(arr, n, i);
-
-    // One by one extract an element from heap
-    for (int i=n-1; i>=0; i--)
+    if (l < r)
     {
-        // Move current root to end
-        call1(arr[0], arr[i]);
+        // Same as (l+r)/2, but avoids overflow for
+        // large l and h
+        int m = l+(r-l)/2;
 
-        // call max heapify on the reduced heap
-        heapify(arr, i, 0);
+        // Sort first and second halves
+        mergeSort(arr, l, m);
+        mergeSort(arr, m+1, r);
+
+        merge(arr, l, m, r);
     }
 }
 
-// To heapify a subtree rooted with node i which is
-// an index in arr[]. n is size of heap
-void heapify(mpz_t arr[], int n, int i)
+// Merges two subarrays of arr[].
+// First subarray is arr[l..m]
+// Second subarray is arr[m+1..r]
+void merge(mpz_t arr[], int l, int m, int r)
 {
-    int largest = i; // Initialize largest as root
-    int l = 2*i + 1; // left = 2*i + 1
-    int r = 2*i + 2; // right = 2*i + 2
+    int i, j, k;
+    int n1 = m - l + 1;
+    int n2 =  r - m;
 
-    // If left child is larger than root
-    if (l < n && (call(arr[l],arr[largest])==1))
-        largest = l;
+    /* create temp arrays */
+    mpz_t L[n1];
+    mpz_t R[n2];
+    for (int i=0;i<n1;i++)
+    mpz_init(L[i]);
 
-    // If right child is larger than largest so far
-    if (r < n && (call(arr[r],arr[largest])==1))
-        largest = r;
+    for (int i=0;i<n2;i++)
+    mpz_init(R[i]);
 
-    // If largest is not root
-    if (largest != i)
+    /* Copy data to temp arrays L[] and R[] */
+    for (i = 0; i < n1; i++)
+        mpz_set(L[i],arr[l + i]);
+    for (j = 0; j < n2; j++)
+        mpz_set(R[j],arr[m + 1+ j]);
+
+    /* Merge the temp arrays back into arr[l..r]*/
+    i = 0; // Initial index of first subarray
+    j = 0; // Initial index of second subarray
+    k = l; // Initial index of merged subarray
+    while (i < n1 && j < n2)
     {
-        call1(arr[i], arr[largest]);
-
-        // Recursively heapify the affected sub-tree
-        heapify(arr, n, largest);
+        if (call(L[i],R[j])<=0)
+        {
+            mpz_set(arr[k],L[i]);
+            i++;
+        }
+        else
+        {
+            mpz_set(arr[k],R[j]);
+            j++;
+        }
+        k++;
     }
+
+    /* Copy the remaining elements of L[], if there
+       are any */
+    while (i < n1)
+    {
+        mpz_set(arr[k],L[i]);
+        i++;
+        k++;
+    }
+
+    /* Copy the remaining elements of R[], if there
+       are any */
+    while (j < n2)
+    {
+        mpz_set(arr[k],R[j]);
+        j++;
+        k++;
+    }
+    for (int i=0;i<n1;i++)
+    mpz_clear(L[i]);
+
+    for (int i=0;i<n2;i++)
+    mpz_clear(R[i]);
 }
 
 void main()
@@ -122,7 +161,7 @@ void main()
   call = &compare_numbers;
   call1 = &swap_numbers;
   create_random_array();
-  heapSort(array_of_numbers,nums_in_list);
+  mergeSort(array_of_numbers, 0, nums_in_list - 1);
   for(int i=0; i<nums_in_list; i++)
   gmp_printf("The value after sort at %d = %Zd\n",i,array_of_numbers[i]);
 

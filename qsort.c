@@ -39,10 +39,8 @@ call = &compare_numbers;
 call1 = &swap_numbers;
 create_random_array();
 quick_sort(array_of_numbers,0,nums_in_list-1);
-gmp_printf("The value at 0 = %Zd\n",array_of_numbers[0]);
-gmp_printf("The value at 1 = %Zd\n",array_of_numbers[1]);
-gmp_printf("The value at 2 = %Zd\n",array_of_numbers[2]);
-gmp_printf("The value at 3 = %Zd\n",array_of_numbers[3]);
+for(int i=0; i<nums_in_list; i++)
+  gmp_printf("The value after sort at %d = %Zd\n",i,array_of_numbers[i]);
 
 }
 
