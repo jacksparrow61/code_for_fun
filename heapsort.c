@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define nums_in_list 4
+#define nums_in_list 10000000
 
 mpz_t array_of_numbers[nums_in_list];
 
