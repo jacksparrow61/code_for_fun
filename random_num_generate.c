@@ -9,10 +9,10 @@ int main (void) {
   mpz_t           randNum;      /* Hold our random numbers */
   int             rndBit;       /* Bound for mpz_urandomb */
   // mpz_t           rndBnd;       /* Bound for mpz_urandomm */
-  int nums_in_list = 10000;
+  int nums_in_list = 1000000;
   gmp_randstate_t gmpRandState; /* Random generator state object */
   FILE * fptr;
-  fptr = fopen("X.txt","w");
+  fptr = fopen("big.txt","w");
   /* Initialize randNum before we use it. */
   mpz_init(randNum);
   time_t current_time = time(NULL);

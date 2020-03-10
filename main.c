@@ -3,32 +3,14 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-
-
-typedef struct pair
-{
-  mpz_t min;
-  mpz_t max;
-}Min_Max_Struct;
-
-enum selection{
-  QuickSort =0,
-  MergeSort,
-  HeapSort,
-  ThreadON,
-  ThreadOFF
-};
-
-void getMinMax(mpz_t array_of_numbers[]);
-long int count_numbers_in_list(char * filename);
-void input_file(void);
-void store_numbers_in_memory(mpz_t arr[]);
-void choose_Algorithm(void);
-void choose_Thread_Mode(void);
+#include <malloc.h>
+#include "main.h"
+#include "merge_sort.h"
 
 
 char file_name[30];
 long int total_Numbers_In_List;
+mpz_t * array_of_numbers;
 FILE * list_of_Numbers;
 int algorithm=100; //Error Value
 int thread_Mode=100; //Error Value
@@ -40,19 +22,28 @@ printf("\n..............Programm to Use Sorting Algorithms......MergeSort, HeapS
 printf("................Enter the name of txt file having the massive list of very long number................................. \n ");
 
 input_file();
-mpz_t array_of_numbers[total_Numbers_In_List];
-store_numbers_in_memory(array_of_numbers);
-getMinMax(array_of_numbers);
+allocate_memory();
+store_numbers_in_memory();
+getMinMax();
 choose_Algorithm();
 choose_Thread_Mode();
+    if(thread_Mode == ThreadOFF)
+    {
+      if(algorithm == MergeSort)
+        merge_sort(array_of_numbers,total_Numbers_In_List);
 
-
+    }
+    else if (thread_Mode == ThreadON)
+    {
+      if(algorithm == MergeSort)
+        merge_sort_w_thread(array_of_numbers,total_Numbers_In_List);
+    }
 
 }
 
 void choose_Thread_Mode(void)
 {
- printf("Enter Thread Mode:.......... Type..........ON for Thread Mode ON............OF for Thread Mode OFF\n ");
+ printf("Enter Thread Mode:.......... Type..........ON => Thread Mode ON............OF => Thread Mode OFF\n ");
  char thread_input[2];
  scanf("%s",thread_input);
   if(strcmp(thread_input,"ON")==0)
@@ -87,7 +78,7 @@ void choose_Algorithm(void)
   }
   printf("Selected algorithm is %d\n", algorithm);
 }
-void getMinMax(mpz_t array_of_numbers[])
+void getMinMax()
 {
   int i;
   Min_Max_Struct list_min_max;
@@ -96,44 +87,54 @@ void getMinMax(mpz_t array_of_numbers[])
   /*If there is only one element then return it as min and max both*/
   if (total_Numbers_In_List == 1)
   {
-     mpz_set(list_min_max.max,array_of_numbers[0]);
-     mpz_set(list_min_max.min,array_of_numbers[0]);
+     mpz_set(list_min_max.max,*(array_of_numbers));
+     mpz_set(list_min_max.min,*(array_of_numbers));
      gmp_printf("Maximum Number in the list is = %Zd\n",list_min_max.max);
      gmp_printf("Minimum Number in the list is = %Zd\n", list_min_max.min);
      return;
   }
   /* If there are more than one elements, then initialize min
       and max*/
-  if (mpz_cmp(array_of_numbers[0],array_of_numbers[1])==0)
+  if (mpz_cmp(*(array_of_numbers),*(array_of_numbers+1))==0)
   {
-    mpz_set(list_min_max.max,array_of_numbers[1]);
-    mpz_set(list_min_max.min,array_of_numbers[1]);
+    mpz_set(list_min_max.max,*(array_of_numbers+1));
+    mpz_set(list_min_max.min,*(array_of_numbers+1));
   }
-  else if (mpz_cmp(array_of_numbers[0],array_of_numbers[1])>0)
+  else if (mpz_cmp(*(array_of_numbers),*(array_of_numbers+1))>0)
   {
-    mpz_set(list_min_max.max,array_of_numbers[0]);
-    mpz_set(list_min_max.min,array_of_numbers[1]);
+    mpz_set(list_min_max.max,*(array_of_numbers));
+    mpz_set(list_min_max.min,*(array_of_numbers+1));
   }
-  else if (mpz_cmp(array_of_numbers[0],array_of_numbers[1])<0)
+  else if (mpz_cmp(*(array_of_numbers),*(array_of_numbers+1))<0)
   {
-    mpz_set(list_min_max.max,array_of_numbers[1]);
-    mpz_set(list_min_max.min,array_of_numbers[0]);
+    mpz_set(list_min_max.max,*(array_of_numbers+1));
+    mpz_set(list_min_max.min,*(array_of_numbers));
   }
 
   for (i = 2; i<total_Numbers_In_List; i++)
   {
-    if (mpz_cmp(array_of_numbers[i],list_min_max.max)>0)
-      mpz_set(list_min_max.max,array_of_numbers[i]);
+    if (mpz_cmp(*(array_of_numbers+i),list_min_max.max)>0)
+      mpz_set(list_min_max.max,*(array_of_numbers+i));
 
-    else if (mpz_cmp(array_of_numbers[i],list_min_max.min)<0)
-      mpz_set(list_min_max.min,array_of_numbers[i]);
+    else if (mpz_cmp(*(array_of_numbers+i),list_min_max.min)<0)
+      mpz_set(list_min_max.min,*(array_of_numbers+i));
   }
   gmp_printf("Maximum Number in the list is = %Zd\n",list_min_max.max);
   gmp_printf("Minimum Number in the list is = %Zd\n", list_min_max.min);
 }
 
+void allocate_memory(void)
+{
+  array_of_numbers = (mpz_t *)malloc(total_Numbers_In_List*sizeof(mpz_t));
+  if (NULL == array_of_numbers) {
+      printf("ERROR: Out of memory\n");
+      return;
+  }
+  for(int i =0;i<total_Numbers_In_List;i++)
+  mpz_init(*(array_of_numbers+i));
+}
 
-void store_numbers_in_memory(mpz_t array_of_numbers[])
+void store_numbers_in_memory(void)
 {
   list_of_Numbers = fopen(file_name,"r");
 
@@ -141,12 +142,8 @@ void store_numbers_in_memory(mpz_t array_of_numbers[])
   {
     for(int i =0;i<total_Numbers_In_List;i++)
     {
-      mpz_init(array_of_numbers[i]);
-    }
-    for(int i =0;i<total_Numbers_In_List;i++)
-    {
-    mpz_inp_str(array_of_numbers[i],list_of_Numbers,10);
-    gmp_printf("%Zd \n",array_of_numbers[i]);
+    mpz_inp_str(*(array_of_numbers+i),list_of_Numbers,10);
+    gmp_printf("%Zd \n",*(array_of_numbers+i));
     }
     fclose(list_of_Numbers);
    }
