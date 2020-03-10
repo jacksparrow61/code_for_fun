@@ -90,6 +90,8 @@ void choose_Algorithm(void)
   }
   printf("Selected algorithm is %d\n", algorithm);
 }
+
+
 void getMinMax()
 {
   int i;
