@@ -12,7 +12,7 @@ int main (void) {
   int nums_in_list = 10000;
   gmp_randstate_t gmpRandState; /* Random generator state object */
   FILE * fptr;
-  fptr = fopen("mpz_integer_list.txt","w");
+  fptr = fopen("X.txt","w");
   /* Initialize randNum before we use it. */
   mpz_init(randNum);
   time_t current_time = time(NULL);
@@ -26,12 +26,11 @@ int main (void) {
   /* Seed the state with an unsigned long int before we begin.. */
   gmp_randseed_ui(gmpRandState, current_time);
 
-  printf("%d random numbers in U[0, -1+2^%d]: are in the txt file mpz_integer_list.txt\n",nums_in_list,rndBit);
+  printf("%d random numbers in U[0, -1+2^%d]: are in the txt file X.txt\n",nums_in_list,rndBit);
   for(i=0; i<nums_in_list; i++) {
     /* mpz_get_ui() can convert randNum to unsigned long int... */
     mpz_urandomb(randNum, gmpRandState, rndBit);
     mpz_out_str(fptr, 10, randNum);
-    if(i!=(nums_in_list-1))
     fputc('\n', fptr);
   } /* end for */
   fclose(fptr);

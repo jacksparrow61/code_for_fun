@@ -4,10 +4,11 @@
 #include <stdlib.h>
 #include <time.h>
 #include <pthread.h>
-
+#include <malloc.h>
 #define nums_in_list 100000
+#define THREAD_MAX 4
+#define len (nums_in_list)/(THREAD_MAX)
 // int THREAD_MAX; //Number of threads that would be created
-
 // thread control parameters
 struct tsk {
     int tsk_no;
@@ -17,8 +18,9 @@ struct tsk {
 
 mpz_t * array_of_numbers;
 
+void merge_sections_of_array(int number, int aggregation);
 void * mergesort_thread(void *arg);
-void merge(long int l, long int m, long int r);
+void merge(int l, int m, int r);
 void mergeSort(int l, int r);
 void create_random_array();
 
@@ -43,11 +45,6 @@ callback_swap call1;
 
 void create_random_array()
 {
-
-  // for(int i =0;i<nums_in_list;i++)
-  // {
-  //   mpz_init(array_of_numbers[i]);
-  // }
   array_of_numbers = (mpz_t *) malloc(nums_in_list * sizeof(mpz_t));
   if (NULL == array_of_numbers) {
       printf("ERROR: Out of memory\n");
@@ -63,7 +60,7 @@ void create_random_array()
   mpz_init(randNum);
   time_t current_time = time(NULL);
   /* Initialize Bounds */
-  rndBit = 12;
+  rndBit = 128;
   // mpz_init_set_str(rndBnd, "1000", 10);
 
   /* Initialize the random state with default algorithm... */
@@ -104,14 +101,15 @@ void mergeSort(int l, int r)
     }
 }
 
+
 // Merges two subarrays of arr[].
 // First subarray is arr[l..m]
 // Second subarray is arr[m+1..r]
-void merge(long int l, long int m, long int r)
+void merge(int l, int m, int r)
 {
-    long int i, j, k;
-    long int n1 = m - l + 1;
-    long int n2 =  r - m;
+    int i, j, k;
+    int n1 = m - l + 1;
+    int n2 =  r - m;
 
     /* create temp arrays */
     mpz_t L[n1];
@@ -192,7 +190,21 @@ void * mergesort_thread(void *arg)
     }
     return 0;
 }
-
+/* merge locally sorted sections */
+void merge_sections_of_array(int number, int aggregation) {
+    for(int i = 0; i < number; i = i + 2) {
+        int left = i * (len * aggregation);
+        int right = ((i + 2) * len * aggregation) - 1;
+        int middle = left + (len * aggregation) - 1;
+        if (right >= nums_in_list) {
+            right = nums_in_list - 1;
+        }
+        merge(left, middle, right);
+    }
+    if (number / 2 >= 1) {
+        merge_sections_of_array(number / 2, aggregation * 2);
+    }
+}
 
 void main()
 {
@@ -205,59 +217,59 @@ void main()
 
 
   create_random_array();
-  t1 = clock();
-  mergeSort(0, nums_in_list - 1);
-  t2 = clock();
-  for(int i=0; i<nums_in_list; i++)
-  gmp_printf("The value after sort at %d = %Zd\n",i,*(array_of_numbers+i));
-  printf("Time taken = %.8f", (t2-t1)/(double)CLOCKS_PER_SEC);
+  // t1 = clock();
+  // mergeSort(0, nums_in_list - 1);
+  // t2 = clock();
+  // for(int i=0; i<nums_in_list; i++)
+  // gmp_printf("The value after sort at %d = %Zd\n",i,*(array_of_numbers+i));
+  // printf("Time taken = %.8f", (t2-t1)/(double)CLOCKS_PER_SEC);
 
-//   int THREAD_MAX=10;
-//   pthread_t threads[THREAD_MAX];
-//   struct tsk tsklist[THREAD_MAX];
-//   struct tsk *tsk;
-//   int len = nums_in_list / THREAD_MAX;
-//   printf("THREADS:%d Nums_in_list:%d LEN:%d\n", THREAD_MAX, nums_in_list, len);
+
+  pthread_t threads[THREAD_MAX];
+  struct tsk tsklist[THREAD_MAX];
+  struct tsk *tsk;
+  printf("THREADS:%d Nums_in_list:%d LEN:%d\n", THREAD_MAX, nums_in_list, len);
+
+  int low = 0;
+  for (int i = 0; i < THREAD_MAX; i++, low += len) {
+      tsk = &tsklist[i];
+      tsk->tsk_no = i;
+      tsk->tsk_low = low;
+      tsk->tsk_high = low + len - 1;
+        if (i == (THREAD_MAX - 1))
+            tsk->tsk_high = nums_in_list - 1;
+        printf("RANGE %d: %d %d\n", i, tsk->tsk_low, tsk->tsk_high);
+  }
+   t1 = clock();
+//   // creating threads
+  for (int i = 0; i < THREAD_MAX; i++) {
+      tsk = &tsklist[i];
+      pthread_create(&threads[i], NULL, mergesort_thread, tsk);
+  }
 //
-//   int low = 0;
-//   for (int i = 0; i < THREAD_MAX; i++, low += len) {
-//       tsk = &tsklist[i];
-//       tsk->tsk_no = i;
-//       tsk->tsk_low = low;
-//       tsk->tsk_high = low + len - 1;
-//         if (i == (THREAD_MAX - 1))
-//             tsk->tsk_high = nums_in_list - 1;
-//         printf("RANGE %d: %d %d\n", i, tsk->tsk_low, tsk->tsk_high);
-//   }
-//    t1 = clock();
-// //   // creating threads
-//   for (int i = 0; i < THREAD_MAX; i++) {
-//       tsk = &tsklist[i];
-//       pthread_create(&threads[i], NULL, mergesort_thread, tsk);
-//   }
-// //
-// //   // joining all threads
-//   for (int i = 0; i < THREAD_MAX; i++)
-//       pthread_join(threads[i], NULL);
-// //
-// // // show the array values for each thread
-//   for (int i = 0; i < THREAD_MAX; i++) {
-//         tsk = &tsklist[i];
-//         printf("SUB %d:", tsk->tsk_no);
-//         for (int j = tsk->tsk_low; j <= tsk->tsk_high; ++j)
-//             gmp_printf(" %Zd", *(array_of_numbers+j));
-//         printf("\n");
-//       }
-// //
-// //   //merge all data blocks of thread
-//   struct tsk *tskm = &tsklist[0];
-//   for (int i = 1; i < THREAD_MAX; i++) {
-//         struct tsk *tsk = &tsklist[i];
-//         merge(tskm->tsk_low, tsk->tsk_low - 1, tsk->tsk_high);
-//     }
-//     t2 = clock();
-//     for(int i=0; i<nums_in_list; i++)
-//     gmp_printf("The value after sort at %d = %Zd\n",i,*(array_of_numbers+i));
-//     printf("Time taken = %.8f", (t2-t1)/(double)CLOCKS_PER_SEC);
+//   // joining all threads
+  for (int i = 0; i < THREAD_MAX; i++)
+      pthread_join(threads[i], NULL);
+//
+// // show the array values for each thread
+  // for (int i = 0; i < THREAD_MAX; i++) {
+  //       tsk = &tsklist[i];
+  //       printf("SUB %d:", tsk->tsk_no);
+  //       for (int j = tsk->tsk_low; j <= tsk->tsk_high; ++j)
+  //           gmp_printf(" %Zd", *(array_of_numbers+j));
+  //       printf("\n");
+  //     }
+//
+//   //merge all data blocks of thread
+  // struct tsk *tskm = &tsklist[0];
+  // for (int i = 1; i < THREAD_MAX; i++) {
+  //       struct tsk *tsk = &tsklist[i];
+  //       merge(tskm->tsk_low, tsk->tsk_low - 1, tsk->tsk_high);
+  //   }
+  merge_sections_of_array(THREAD_MAX,1);
+    t2 = clock();
+    for(int i=0; i<nums_in_list; i++)
+    gmp_printf("The value after sort at %d = %Zd\n",i,*(array_of_numbers+i));
+    printf("Time taken = %.8f", (t2-t1)/(double)CLOCKS_PER_SEC);
 free(array_of_numbers);
 }
