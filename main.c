@@ -6,7 +6,8 @@
 #include <malloc.h>
 #include "main.h"
 #include "merge_sort.h"
-
+#include "heap_sort.h"
+#include "quick_sort.h"
 
 char file_name[30];
 long int total_Numbers_In_List;
@@ -31,7 +32,12 @@ choose_Thread_Mode();
     {
       if(algorithm == MergeSort)
         merge_sort(array_of_numbers,total_Numbers_In_List);
-
+      else if (algorithm == HeapSort)
+        heap_sort(array_of_numbers,total_Numbers_In_List);
+      else if (algorithm == QuickSort)
+        quick_sort(array_of_numbers,total_Numbers_In_List);
+      else
+      printf("Error Wrong Algorithm");
     }
     else if (thread_Mode == ThreadON)
     {
@@ -52,13 +58,19 @@ void choose_Thread_Mode(void)
     thread_Mode = ThreadOFF;
   else
     thread_Mode =100;
-  printf("Thread mode = %d\n",thread_Mode);
+
+  if(thread_Mode==4)
+  printf("Thread mode = ThreadOFF\n");
+  else if(thread_Mode==3)
+  printf("Thread mode = ThreadON\n");
+  else if (thread_Mode=100)
+  printf("ERROR\n");
 }
 
 
 void choose_Algorithm(void)
 {
-  printf("Enter which Algorithm is to be used\n.......Type........\nq for (q)uicksort\nm for (m)ergesort\nh for (h)eapsort\n ");
+  printf("Enter which Algorithm is to be used\n.......Type........\nm for (m)ergesort\nq for (q)uicksort\nh for (h)eapsort\n ");
   char algorithm_selection;
   scanf("%s",&algorithm_selection);
   switch(algorithm_selection)
@@ -121,6 +133,8 @@ void getMinMax()
   }
   gmp_printf("Maximum Number in the list is = %Zd\n",list_min_max.max);
   gmp_printf("Minimum Number in the list is = %Zd\n", list_min_max.min);
+  mpz_clear(list_min_max.min);
+  mpz_clear(list_min_max.max);
 }
 
 void allocate_memory(void)

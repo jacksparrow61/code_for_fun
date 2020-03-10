@@ -4,40 +4,10 @@
 #include <stdlib.h>
 #include <time.h>
 #include <pthread.h>
-#include "merge_sort.h"
 #include <malloc.h>
+#include "merge_sort.h"
+#include "thread_info.h"
 
-#define THREAD_MAX 4
-
-long int arr_block_len =0;
-
-struct tsk {
-    int tsk_no;
-    int tsk_low;
-    int tsk_high;
-    mpz_t * arr;
-};
-
-// void merge_sections_of_array(int number, int aggregation);
-// void * mergesort_thread(void *arg);
-
-
-
-int compare_numbers(mpz_t a ,mpz_t b)
-{
-return mpz_cmp(a,b);
-}
-
-
-void swap_numbers(mpz_t a, mpz_t b)
-{
-mpz_swap(a,b);
-return;
-}
-
-
-callback_compare call;
-callback_swap call1;
 
 /* l is for left index and r is right index of the
    sub-array of arr to be sorted */
@@ -118,11 +88,11 @@ void merge(mpz_t * array_of_numbers,int l, int m, int r)
         j++;
         k++;
     }
-    // for (int i=0;i<n1;i++)
-    // mpz_clear(L[i]);
+    for (int i=0;i<n1;i++)
+    mpz_clear(L[i]);
 
-    // for (int i=0;i<n2;i++)
-    // mpz_clear(R[i]);
+    for (int i=0;i<n2;i++)
+    mpz_clear(R[i]);
     free(L);
     free(R);
 }
@@ -167,7 +137,6 @@ void merge_sections_of_array(int number, int aggregation,mpz_t * array_of_number
 
 void merge_sort(mpz_t * array_of_numbers,long int total_Numbers_In_List)
 {
-  clock_t t1, t2;
   call = &compare_numbers;
   call1 = &swap_numbers;
   t1 = clock();
@@ -182,8 +151,9 @@ void merge_sort_w_thread(mpz_t * array_of_numbers,long int total_Numbers_In_List
 {
     call = &compare_numbers;
     call1 = &swap_numbers;
+    long int arr_block_len;
     arr_block_len = total_Numbers_In_List/THREAD_MAX;
-    clock_t t1, t2;
+
     pthread_t threads[THREAD_MAX];
     struct tsk tsklist[THREAD_MAX];
       // for(int i=0;i<THREAD_MAX;i++){
